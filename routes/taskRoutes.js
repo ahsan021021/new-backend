@@ -7,6 +7,7 @@ import {
   updateDueDate,
   getTasksByDueDate,
   deleteTask,
+  markTaskAsInProgress,
 } from '../controllers/taskController.js';
 import { authenticateToken } from '../middleware/auth.js'; // Middleware to authenticate users
 
@@ -23,6 +24,7 @@ router.get('/status/:status', authenticateToken, getTasksByStatus);
 
 // Mark a task as done
 router.put('/:id/done', authenticateToken, markTaskAsDone);
+router.put('/:id/in-progress',authenticateToken, markTaskAsInProgress);
 
 // Update the due date of a task
 router.put('/:id/due-date', authenticateToken, updateDueDate);

@@ -5,7 +5,8 @@ import {
   updateCampaign,
   deleteCampaign,
   sendCampaignEmails,
-  setCampaignToDraft
+  setCampaignToDraft,
+  triggerScheduledEmails
 } from '../controllers/campaignsController.js';
 
 import { authenticateToken } from '../middleware/auth.js';
@@ -19,5 +20,5 @@ router.put('/:id', authenticateToken, updateCampaign);
 router.delete('/:id', authenticateToken, deleteCampaign);
 router.post('/:id/send', authenticateToken, checkEmailLimit, sendCampaignEmails);
 router.patch('/:id/draft', authenticateToken, setCampaignToDraft);
-
+triggerScheduledEmails();
 export default router;

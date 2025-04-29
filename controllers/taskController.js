@@ -76,6 +76,24 @@ export const updateDueDate = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// Mark a task as in progress
+export const markTaskAsInProgress = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId: req.userId }, // Ensure the task belongs to the logged-in user
+      { status: 'in progress' }, // Update the status to "in progress"
+      { new: true }
+    );
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found.' });
+    }
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 export const getTasksByDueDate = async (req, res) => {
   const { dueDate } = req.query;
 

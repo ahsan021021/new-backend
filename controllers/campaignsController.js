@@ -2,6 +2,7 @@ import Campaign from '../models/Compaign.js';
 import User from '../models/userModel.js';
 import nodemailer from 'nodemailer';
 import EmailSettings from '../models/EmailSettings.js';
+import schedule from 'node-schedule'; // Import node-schedule
 
 // Get all campaigns for a user
 export const getCampaigns = async (req, res) => {
@@ -11,6 +12,52 @@ export const getCampaigns = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+
+// Function to trigger the sendCampaignEmails function at the scheduled time
+export const triggerScheduledEmails = async () => {
+  try {
+    // Find all campaigns with a scheduled date in the future and status 'scheduled'
+    const campaigns = await Campaign.find({
+      scheduledDate: { $gte: new Date() }, // Only future dates
+      status: 'scheduled', // Ensure the campaign is marked as scheduled
+    });
+
+    console.log(`Found ${campaigns.length} campaigns to schedule.`);
+
+    campaigns.forEach((campaign) => {
+      // Schedule the sendCampaignEmails function for the scheduled date and time
+      schedule.scheduleJob(campaign.scheduledDate, async () => {
+        console.log(`Triggering campaign "${campaign.name}" at ${campaign.scheduledDate}`);
+
+        // Mock request and response objects to call sendCampaignEmails
+        const req = { params: { id: campaign._id }, userId: campaign.userId }; // Mock request object
+        const res = {
+          status: (code) => ({
+            json: (data) => console.log(`Response: ${code}`, data),
+          }),
+        }; // Mock response object
+
+        // Call the sendCampaignEmails function
+        await sendCampaignEmails(req, res);
+      });
+
+      console.log(`Campaign "${campaign.name}" scheduled for ${campaign.scheduledDate}`);
+    });
+  } catch (error) {
+    console.error('Error scheduling campaigns:', error);
+  }
+};
+
+// Function to continuously trigger scheduled campaigns
+export const startCampaignScheduler = () => {
+  console.log('Starting campaign scheduler...');
+  // Run the triggerScheduledEmails function every minute
+  setInterval(async () => {
+    console.log('Checking for scheduled campaigns...');
+    await triggerScheduledEmails();
+  }, 60 * 1000); // Check every 60 seconds
 };
 
 // Create a new campaign
